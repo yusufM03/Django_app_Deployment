@@ -26,9 +26,8 @@ SECRET_KEY = 'django-insecure-_5_8#qjd$-%h2xo#8#32)(z0t9m=-bq+%_&*&xima=6n5_@f%f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['*'
-]
+ALLOWED_HOSTS = ['dentalize.azurewebsites.net']
+CSRF_TRUSTED_ORIGINS = ['https://dentalize.azurewebsites.net']
 CSRF_COOKIE_SECURE=True
 
 # Application definition
