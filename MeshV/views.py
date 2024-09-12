@@ -11,7 +11,7 @@ import json
 import numpy as np
 import open3d as o3d
 import Notebooks.gen_utils as gu
-
+from django.views.decorators.csrf import csrf_exempt
 
 #------ obj to ply file------------#
 
@@ -40,7 +40,7 @@ def convert_obj_to_ply(file_path):
 
 
 #----------------Upload file------------------------#
-
+@csrf_exempt
 def upload_mesh(request):
   from django.shortcuts import render, redirect
 from django.core.files.storage import default_storage
@@ -101,7 +101,7 @@ def Visualization(request,file_path):
 
 
 
-
+@csrf_exempt 
 def segment_mesh(request):
         
       # ------------Input----------- #
