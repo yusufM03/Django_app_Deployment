@@ -16,6 +16,6 @@ COPY . /app
 WORKDIR /app
 
 EXPOSE 80
-
+#try
 # Command to run your application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
