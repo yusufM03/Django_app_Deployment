@@ -83,7 +83,9 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [ 'dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net',
+    'localhost',
+    '127.0.0.1']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -15,5 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 WORKDIR /app
 
+EXPOSE 80
+
 # Command to run your application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
