@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-_5_8#qjd$-%h2xo#8#32)(z0t9m=-bq+%_&*&xima=6n5_@f%f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dentalize.azurewebsites.net','.dentalize.azurewebsites.net'] 
+ALLOWED_HOSTS =[os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 CSRF_TRUSTED_ORIGINS = ['https://'+ os.environ['WEBSITE_HOSTNAME']]
 CSRF_COOKIE_SECURE=True
 SESSION_COOKIE_SECURE = True
