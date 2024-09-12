@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-_5_8#qjd$-%h2xo#8#32)(z0t9m=-bq+%_&*&xima=6n5_@f%f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -83,6 +83,8 @@ DATABASES = {
     }
 }
 
+ALLOWED_HOSTS = ['*']
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -112,19 +114,13 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-SECURE_SSL_REDIRECT = True
-CSRF_COOKIE_SECURE = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATIC_URL = 'static/'
 
-# Add this line to your settings file
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Ensure this is also defined
-STATIC_URL = '/static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -138,9 +134,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Keep the default storage settings for media files
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-# settings.py
-CSRF_TRUSTED_ORIGINS = [
-    'https://dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net',
-]
-
