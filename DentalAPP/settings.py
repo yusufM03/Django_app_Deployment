@@ -39,11 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'MeshV', # to use django-storages cuz it's extenrnal library 
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -141,17 +139,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Keep the default storage settings for media files
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-
+# settings.py
 CSRF_TRUSTED_ORIGINS = [
     'https://dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net',
 ]
-# settings.py
-CORS_ALLOWED_ORIGINS = [
-    "https://dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net",
-]
-
 
