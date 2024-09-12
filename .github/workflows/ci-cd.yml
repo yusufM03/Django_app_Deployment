@@ -3,12 +3,12 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Adjust to your default branch
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,10 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Adjust as necessary
-
-      - name: Install Docker
-        run: sudo apt-get install docker-ce docker-ce-cli containerd.io
+          python-version: '3.9'
 
       - name: Build Docker image
         run: docker build -t ymack/my-django:latest .
