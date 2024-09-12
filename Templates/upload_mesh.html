@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start</title>
+     
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional styles for the drop zone */
+        #dropzone {
+            width: 90%;
+            height: 300px;
+            border: 2px dashed #4a5568;
+            border-radius: 0.5rem;
+            background-color: #1a202c;
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e0;
+            font-size: 1.25rem;
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        #dropzone.dragover {
+            border-color: #68d391; /* Tailwind green-400 */
+            color: #68d391; /* Tailwind green-400 */
+        }
+        h2 {
+            margin-top: -50px;
+        }
+        .button-container {
+            border: 2px solid #4a5568; /* Border color */
+            padding: 16px; /* Padding inside the box */
+            border-radius: 12px; /* Rounded corners */
+            background-color: #1a202c; /* Background color */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow for 3D effect */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white h-screen overflow-hidden">
+
+    <header>
+        <nav class="flex justify-between items-center p-4 bg-gray-900 border-b-4 border-green-500">
+            <a href="#home" class="text-white font-bold text-xl">CS</a>
+            <div class="space-x-4">
+                <a href="#home" class="text-white hover:text-green-500">HOME</a>
+                <a href="#docs" class="text-white hover:text-green-500">DOCS</a>
+                <a href="#start" class="text-white hover:text-green-500">START</a>
+                <a href="#about" class="text-white hover:text-green-500">ABOUT</a>
+                <a href="#contact" class="text-white hover:text-green-500">CONTACT</a>
+            </div>
+            <button class="bg-transparent border border-white text-white py-2 px-4 rounded hover:bg-green-500">Log Out</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex flex-col items-center justify-center h-full p-8">
+        <h2 class="text-3xl font-semibold text-center mb-12">Please Upload files to Start</h2>
+        <div class="space-y-6">
+            <div class="bg-gray-900 flex flex-col md:flex-row w-full px-6 py-12 rounded-md">
+                <div class="text-center flex flex-col md:flex-row gap-4 w-full">
+                    <div class="button-container">
+                        <button id="visualize-btn" class="bg-slate-100 font-semibold text-slate-800 py-4 px-8 hover:bg-slate-700 hover:text-white leading-tight rounded-lg transition ease-linear">
+                            <div class="flex items-center whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <!-- 3D Cube Icon for visualization -->
+                                    <path d="M3 6l9-3 9 3v12l-9 3-9-3V6z" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path d="M3 6l9 3 9-3" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path d="M3 18l9 3 9-3" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path d="M12 3v18" stroke="currentColor" stroke-width="2" fill="none"/>
+                                </svg>
+                                Visualize OBJ File
+                            </div>
+                        </button>
+                    </div>
+                    <!-- Modal for uploading upper and lower files -->
+<div id="upload-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+  <div class="bg-gray-900 p-6 rounded-lg w-1/2">
+      <h3 class="text-xl font-semibold mb-4 text-center">Upload Upper and Lower Mesh Files</h3>
+      <form method="post" enctype="multipart/form-data" action="{% url 'upload_mesh' %}">
+          {% csrf_token %}
+          <div class="mb-4">
+              <label for="upper-file" class="block text-gray-300 mb-2">Upload Upper File:</label>
+              <input type="file" id="upper-file" name="upper-file" class="w-full bg-gray-700 text-white p-2 rounded">
+          </div>
+          <div class="mb-4">
+              <label for="lower-file" class="block text-gray-300 mb-2">Upload Lower File:</label>
+              <input type="file" id="lower-file" name="lower-file" class="w-full bg-gray-700 text-white p-2 rounded">
+          </div>
+          <div class="flex justify-end space-x-4">
+              <button type="button" id="cancel-btn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">Cancel</button>
+              <button type="submit" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">Upload and Visualize</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+                    <!--
+                    <div class="button-container">
+                        <button id="segment-btn" class="bg-slate-100 font-semibold text-slate-800 py-4 px-8 hover:bg-slate-700 hover:text-white leading-tight rounded-lg transition ease-linear">
+                            <div class="flex items-center whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     New shape for the icon 
+                                    <rect x="4" y="4" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path d="M4 12h16" stroke="currentColor" stroke-width="2" fill="none"/>
+                                </svg>
+                                Segment OBJ File
+                            </div>
+                        </button>
+                    </div>  -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Drag and Drop Area -->
+    <form method="post" enctype="multipart/form-data" action="{% url 'upload_mesh' %}">
+      {% csrf_token %}
+      <div id="dropzone">
+          <p class="text-gray-300">Drag & drop a mesh file here or click to select one</p>
+      </div>
+      <input type="file" id="file" name="file" class="hidden">
+      <button type="submit" id="submit-btn" class="hidden"></button>
+  </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            
+          
+    //display option upper/Lower mesh upload and rename it automatically it's important
+    const visualizeBtn = document.getElementById('visualize-btn');
+    const uploadModal = document.getElementById('upload-modal');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    visualizeBtn.addEventListener('click', () => {
+        uploadModal.classList.remove('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        uploadModal.classList.add('hidden');
+    });
+
+    // Optional: Close the modal if clicked outside of the modal content
+    window.addEventListener('click', (e) => {
+        if (e.target === uploadModal) {
+            uploadModal.classList.add('hidden');
+        }
+    });
+
+ 
+
+
+
+
+
+
+
+
+
+        });
+        
+
+      
+        
+
+
+
+
+
+    </script>
+</body>
+</html>

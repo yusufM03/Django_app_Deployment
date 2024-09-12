@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Container and panel styles */
+        #mesh-container {
+            height: 100%;
+            width: 100%;
+            border: 2px solid #4a5568;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #1a202c;
+            margin-bottom: 1rem;
+            margin-top: 5px;
+        }
+
+        #label-container {
+            overflow-y: auto;
+            height: 95%;
+            background-color: #2d3748;
+            margin-top: 5px;
+        }
+
+        #labels-box .label-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+        }
+
+        .label-color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .label-text {
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    
+
+
+        
+    </style>
+</head>
+<body class="bg-gray-800 text-white h-screen overflow-hidden">
+
+    <!-- Navbar -->
+    <header>
+        <nav class="flex justify-between items-center p-4 bg-gray-900 border-b-4 border-green-500">
+            <a href="#home" class="text-white font-bold text-xl">CS</a>
+            <div class="space-x-4">
+                <a href="#home" class="text-white hover:text-green-500">HOME</a>
+                <a href="#docs" class="text-white hover:text-green-500">DOCS</a>
+                <a href="#start" class="text-white hover:text-green-500">START</a>
+                <a href="#about" class="text-white hover:text-green-500">ABOUT</a>
+                <a href="#contact" class="text-white hover:text-green-500">CONTACT</a>
+            </div>
+            <button class="bg-transparent border border-white text-white py-2 px-4 rounded hover:bg-green-500">Log Out</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex h-full p-8">
+        <h2 id="process" class="text-2xl font-bold mb-8 w-full text-center">Mesh Visualization</h2>
+        <div class="flex w-full h-full">
+          
+            <!-- Left panel for labels -->
+            <div id="label-container" class="w-1/4 p-4">
+                <h3 class="text-lg font-semibold text-white mb-4"></h3>
+                <div id="labels-box" class="space-y-4">
+                    <!-- Labels will be dynamically added here -->
+                </div>
+            </div>
+            
+
+            <!-- Right panel for 3D visualization -->
+            <div id="mesh-container" class="w-3/4 p-4">
+                <!-- Three.js mesh visualization will be here -->
+              <div class="flex justify-center space-x-4 mb-4">
+                <div id="lower-jaw-btn" class="bg-green-500 hover:bg-green-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Lower Jaw">
+                    <span class="text-white font-bold">L</span> <!-- Lower jaw sign -->
+                </div>
+                <div id="upper-jaw-btn" class="bg-blue-500 hover:bg-blue-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Upper Jaw">
+                    <span class="text-white font-bold">U</span> <!-- Upper jaw sign -->
+                </div>
+                <div id="both-jaws-btn" class="bg-purple-500 hover:bg-purple-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Both Jaws">
+                    <span class="text-white font-bold">B</span> <!-- Both jaws sign -->
+                </div>
+                
+              </div>
+              
+            </div>
+
+            <div id="download-container" class="mt-4"></div>
+        </div>
+
+        <!-- Buttons Container -->
+        <div class="flex space-x-4 mt-4">
+            <!-- Segmentation Button -->
+            <form id="csrf-form" method="post">
+                {% csrf_token %}
+            </form>
+            <button type="button" id="segment-btn" class="flex items-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none">
+                Segment Mesh
+            </button>
+        </div>
+    </main>
+
+    <!-- Three.js and other scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SSAOPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+
+
+
+    <script >
+    let scene, camera, renderer, controls,composer,restoreLabel ;       
+    let originalMesh;
+    let mesh;
+    let originalColors = [];
+    let originalPositions=[];
+    let selectedColores_Upper = []; 
+    let selectedColores_Lower = []; 
+    let filePathTOSegment;
+    let segmentedLowerUrl,segmentedUpperUrl ;
+    let LabelUpper,LabelLower;
+    let uppermesh;
+    let lowermesh;
+    let bothoption;
+
+//------------------------------------ Function to load the OBJ file------------------------------//
+
+function load_obj(file_path, callback) {
+    const loader = new THREE.OBJLoader();
+    loader.load(file_path, function (loadedMesh) {
+        // Compute the centroid of the mesh
+        let centroid = new THREE.Vector3();
+        let count = 0;
+
+        // Traverse all children (if the object is a group)
+        loadedMesh.traverse(function (child) {
+            if (child.isMesh) {
+                const geometry = child.geometry;
+                geometry.computeBoundingBox();
+                const boundingBox = geometry.boundingBox;
+                centroid.add(boundingBox.getCenter(new THREE.Vector3()));
+                count++;
+                
+
+                // Apply a material that uses vertex colors if segmented
+                if (file_path.includes("segmented")) {
+                    child.material = new THREE.MeshPhysicalMaterial({
+                        vertexColors: true,
+                        metalness: 0.2,
+                        roughness: 0.5,
+                        clearcoat: 1.0,  // Adds a glossy clear coat layer
+                        clearcoatRoughness: 0.1,
+                    });
+
+                    // Store the original colors
+                    const colorAttribute = geometry.attributes.color;
+                    const positionAttribute= geometry.attributes.position;
+                    originalColors = []; // Reset originalColors array
+                    originalPositions=[];
+                    
+
+
+                    for (let i = 0; i < colorAttribute.count; i++) {
+                        originalColors.push(new THREE.Color().fromBufferAttribute(colorAttribute, i));
+                        const vertex = new THREE.Vector3().fromBufferAttribute(positionAttribute, i);
+                        originalPositions.push(vertex.clone()); // Use clone() to ensure each position is unique
+
+                    }
+                }
+            }
+        });
+
+        if (count > 0) {
+            centroid.divideScalar(count);
+            loadedMesh.position.sub(centroid);
+        }
+      
+        // Save the loaded mesh as the originalMesh
+        originalMesh = loadedMesh;
+        
+        // Create a clone for manipulation and visualization
+        mesh = originalMesh.clone();
+      
+      
+        scene.add(mesh);
+      
+
+
+      
+        
+        // Call the callback function with the processed mesh
+        if (callback) callback(mesh);
+
+        // Initialize the getSelectedTeeth function after the object is added to the scene
+      
+    });
+    if ( file_path.includes("segment")){
+              process_title=document.getElementById("process")
+
+              process_title.innerHTML=`${file_path.split('/').pop().toLowerCase().slice(0,5)} Jaw Segmentation`
+            }
+            else{
+              process_title=document.getElementById("process")
+              console.log(file_path.split('/').pop().toLowerCase().slice(0,5));
+
+              process_title.innerHTML=`${file_path.split('/').pop().toLowerCase().slice(0,5)} Jaw Visualization`
+            
+            } 
+}
+//----------------------------------------------------------------------------------------------//
+
+
+
+//------------------------------- Function to reset the mesh back to its original colors--------------------------//
+function resetMeshColors() {
+  mesh.traverse(function (child) {
+            if (child.isMesh && child.geometry && child.geometry.isBufferGeometry) {
+                const geometry = child.geometry;
+                const colorAttribute = geometry.attributes.color;
+                const positionAttribute = geometry.attributes.position;
+
+                if (colorAttribute && originalColors && originalPositions) {
+                    // Restore original colors and positions
+                    for (let i = 0; i < colorAttribute.count; i++) {
+                        const originalColor = originalColors[i];
+                        const originalPosition = originalPositions[i];
+
+                        colorAttribute.setXYZ(i, originalColor.r, originalColor.g, originalColor.b);
+                        positionAttribute.setXYZ(i, originalPosition.x, originalPosition.y, originalPosition.z);
+                    }
+                    colorAttribute.needsUpdate = true;
+                    positionAttribute.needsUpdate = true;
+                }
+            }
+        });
+    }
+
+
+
+// --------------------------------selecting teeth------------------------------------------------//
+
+
+function getSelectedTooth(segLabel,selectedColores) {
+    function handleClick(event) {
+        const labelElement = event.target;
+
+        if (!labelElement) {
+            console.error('Label element not found in the clicked target.');
+            return;
+        }
+
+        const label = labelElement.textContent.trim();
+        const rgb = segLabel[label]; // Ensure restoreLabel is defined and holds the RGB values
+
+        if (!rgb) {
+            console.error('Color not found for label:', label);
+            return;
+        }
+
+        const targetColor = new THREE.Color(rgb[0], rgb[1], rgb[2]);
+        selectedColores.push({targetColor});
+
+        // Reset the mesh colors to original before applying any new changes
+        resetMeshColors();
+
+        // Traverse and modify the cloned mesh
+        mesh.traverse(function (child) {
+            if (child.isMesh && child.geometry && child.geometry.isBufferGeometry) {
+                const geometry = child.geometry;
+                const positionAttribute = geometry.attributes.position;
+                const colorAttribute = geometry.attributes.color;
+
+                if (!colorAttribute) {
+                    console.warn('No color attribute found on the mesh.');
+                    return;
+                }
+
+                const newColor = new THREE.Color(0x808080); // Gray color
+
+                // Modify the vertices based on the selected color
+                for (let i = 0; i < positionAttribute.count; i++) {
+                    const vertexColor = new THREE.Color().fromBufferAttribute(colorAttribute, i);
+                    
+
+                    // Change the color if the vertex color is different from the target
+                    if((!colorsAreClose(targetColor, vertexColor))&&(!isColorInSelectedColores(vertexColor,selectedColores))) {
+                        colorAttribute.setXYZ(i, newColor.r, newColor.g, newColor.b);
+                        positionAttribute.setXYZ(i, Infinity, Infinity, Infinity);
+                    
+                    }
+                  
+                }
+
+                positionAttribute.needsUpdate = true;
+                colorAttribute.needsUpdate = true;
+            }
+        });
+    }
+
+    // Attach click event listener to label elements
+    const divs = document.querySelectorAll('.label-text');
+    divs.forEach(div => {
+        div.addEventListener('click', handleClick);
+    });
+}
+
+//-----------------------------Utility function to compare colors within a certain tolerance------------------------//
+function colorsAreClose(c1, c2, tolerance = 0.01) {
+    return Math.abs(c1.r - c2.r) < tolerance &&
+           Math.abs(c1.g - c2.g) < tolerance &&
+           Math.abs(c1.b - c2.b) < tolerance;
+}
+function isColorInSelectedColores(vertexColor, selectedLabels) {
+    return selectedLabels.some(labelInfo => 
+        colorsAreClose(vertexColor, labelInfo.targetColor)
+    );
+}
+//------------------------------------------------------------------------------------------------------------------//
+
+
+
+//------------------------------------------------Load_PLY--------------------------------------------//
+        function load_ply(file_path, callback) {
+            const loader = new THREE.PLYLoader();
+            loader.load(file_path, function (geometry) {
+                geometry.computeBoundingBox();
+                let centroid = geometry.boundingBox.getCenter(new THREE.Vector3());
+
+                // Convert geometry to mesh
+                const material = new THREE.MeshPhysicalMaterial({
+                    color: 0xffffff,
+                    metalness: 0.4,
+                    roughness: 0.4,
+                    vertexColors: true, // Use vertex colors if available
+                    clearcoat: 0.8,
+                    clearcoatRoughness: 0.1,
+                });
+                mesh = new THREE.Mesh(geometry, material);
+
+                // Center the mesh
+                mesh.position.sub(centroid);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                // Call the callback function with the processed mesh
+                if (callback) callback(mesh);
+            });
+        }
+
+//------------------------------------------display Labels of segmentation -----------------------------------//
+        function displayLabels(labels) {
+            const labelsBox = document.getElementById('labels-box');
+            labelsBox.innerHTML = ''; // Clear existing labels
+
+            for (const [label, rgb] of Object.entries(labels)) {
+                console.log(label);
+                const labelItem = document.createElement('div');
+                labelItem.className = 'label-item';
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'label-color-box';
+                 // Convert float RGB values (0-1 range) to integer values (0-255 range)
+                const r = Math.round(rgb[0] * 255);
+                const g = Math.round(rgb[1] * 255);
+                const b = Math.round(rgb[2] * 255);
+
+                // Convert RGB values to CSS color string
+                const color = `rgb(${r}, ${g}, ${b})`;
+                
+              
+                colorBox.style.backgroundColor = color; // Set the label's color
+
+                const labelText = document.createElement('span');
+                labelText.className = 'label-text';
+                labelText.textContent = label;
+
+                labelItem.appendChild(colorBox);
+                labelItem.appendChild(labelText);
+                labelsBox.appendChild(labelItem);
+            }
+        }
+
+//--------------------------------------------visualize mesh ------------------------------------------------------//
+        function Visualization(file_path,seglabel) {
+
+
+            console.log(file_path);
+            if (file_path.includes("segmented")){
+
+                  displayLabels(seglabel); // for segmented mesh
+            }
+            if (mesh){
+              scene.remove(mesh);
+            }
+            else{
+            //Create Scene         
+            initScene();}
+            
+          
+            const file_extension = file_path.split('.').pop().toLowerCase(); // Ensure extension is in lowercase
+          
+          
+            
+
+            if (file_extension === "obj") {
+                load_obj(file_path, function (loaded_mesh) {
+                    
+                });
+            } else if (file_extension === "ply") {
+                load_ply(file_path, function (loaded_mesh) {
+                    scene.add(loaded_mesh);
+                });
+            } else {
+                console.error("Unsupported file extension:", file_extension);
+            }
+
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+          
+          
+          
+            // Animation loop
+            animate();
+
+          
+          
+        }
+
+  function onWindowResize() {
+      const container = document.getElementById('mesh-container');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      composer.setSize(container.clientWidth, container.clientHeight);
+  }
+
+  function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      composer.render();
+      
+  }
+  
+//-----------------------------------CreateScene----------------------------------------//
+
+function initScene(){
+      const container = document.getElementById('mesh-container');
+        // Scene setup
+      scene = new THREE.Scene();
+
+      // Camera setup
+      camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 0, 70);
+      
+
+      // Renderer setup
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // Lighting setup
+      const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+      scene.add(ambientLight);
+
+      const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight1.position.set(1, 1, 1).normalize();
+      directionalLight1.castShadow = true;
+      scene.add(directionalLight1);
+
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+      directionalLight2.position.set(-1, -1, 1).normalize();
+      scene.add(directionalLight2);
+
+      const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.3);
+      directionalLight3.position.set(1, -1, -1).normalize();
+      scene.add(directionalLight3);
+
+      const hemisphereLight = new THREE.HemisphereLight(0x606060, 0x404040, 0.5); // Soft ambient light
+      scene.add(hemisphereLight);
+
+      // Post-processing setup
+      composer = new THREE.EffectComposer(renderer);
+      const renderPass = new THREE.RenderPass(scene, camera);
+      composer.addPass(renderPass);
+
+      // Bloom effect for highlights
+      const bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(container.clientWidth, container.clientHeight),
+          0.1, // Intensity
+          0.2, // Radius
+          0.3  // Threshold
+      );
+      composer.addPass(bloomPass);
+
+      // Orbit controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+}
+
+
+//----------------------------------------------------------------------------------------------------------//
+
+
+        // the visualization step without segmentation: Could be both meshes 
+        let encodedFiles = "{{file_path}}"
+
+        // Decode the HTML entities
+        let decodedFiles = encodedFiles.replace(/&#x27;/g, "'");
+        let validJsonString = decodedFiles.replace(/'/g, '"');
+        // Now parse it as a JavaScript array
+        let files = JSON.parse( validJsonString );
+
+      
+
+    
+      
+      
+
+      
+       //Visulaization Upper at first : so i should add buttoms of option view ,also the title which jaws
+
+      
+
+      //Display any jaws  at first 
+    
+      filePathTOSegment=files[0];
+      
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+
+            
+      Visualization(filePathTOSegment);  // should be any mesh displayed at first 
+          
+    //For Hover lower or upper mesh       
+            const buttons = document.querySelectorAll('.relative');
+            buttons.forEach(button => {
+                button.addEventListener('mouseover', () => {
+                    const tooltip = button.querySelector('.tooltip');
+                    tooltip.classList.add('tooltip-show');
+                });
+                button.addEventListener('mouseout', () => {
+                    const tooltip = button.querySelector('.tooltip');
+                    tooltip.classList.remove('tooltip-show');
+                });
+            });
+
+
+
+    // Event listeners for each button
+
+      document.getElementById('lower-jaw-btn').addEventListener('click', () => {
+        bothoption=false;
+        console.log(segmentedLowerUrl);
+              if (lowermesh){
+                    scene.remove(lowermesh);
+                    scene.remove(uppermesh);
+                    reseteScene();
+                    
+                  
+
+                  }
+              if (segmentedLowerUrl){
+                  scene.remove(mesh);
+                  displayLabels(LabelLower);
+                  load_obj(segmentedLowerUrl);
+                  
+
+
+                
+                  selectedColores_Lower=[];
+                  getSelectedTooth(LabelLower,selectedColores_Lower);
+
+                 }
+              else{
+                if (files.length==2){ 
+                  
+                  
+              
+                  scene.remove(mesh); // remove upper mesh from scene 
+                
+      
+                  
+                  load_obj(files[1]); // add lower to scene 
+                  
+                  
+                  filePathTOSegment=files[1]; // store updated mesh visualized for segmentation if click button 'seg'
+                
+
+
+                  }
+                else {
+                  if (files[0].includes('lower')){
+                      
+                    
+                  
+                    load_obj(files[0]);
+          
+                    filePathTOSegment=files[0];}
+
+                    
+                  }
+                }
+              
+            
+                
+                
+            });
+
+            document.getElementById('upper-jaw-btn').addEventListener('click', () => {
+              bothoption=false;
+              if (lowermesh){
+                    scene.remove(lowermesh);
+                    scene.remove(uppermesh);
+                  
+                    reseteScene();
+                  
+
+                  }
+              if (segmentedUpperUrl){
+                      scene.remove(mesh);
+                      displayLabels(LabelUpper);
+                      load_obj(segmentedUpperUrl);
+                      selectedColores_Upper=[];
+                      getSelectedTooth(LabelUpper,selectedColores_Upper);
+
+                 }
+              else{
+                if (files.length==2){
+                  
+                
+                  
+                  scene.remove(mesh); // remove lower from scene 
+                  load_obj(files[0]); // add upper to scene 
+                
+                  filePathTOSegment=files[0];}
+                }
+
+
+              
+              
+                
+
+            });
+
+            document.getElementById('both-jaws-btn').addEventListener('click', () => {
+                console.log('Both Jaws selected');
+                //  both meshes
+                bothoption=true // tracking if the user choose both option
+
+                
+
+                if (segmentedLowerUrl){
+                
+                  scene.remove(mesh);
+                  reseteScene();
+                  
+                  //displayLabels(LabelLower);
+                  load_obj(segmentedLowerUrl, function (mes) {
+                    lowermesh=mes;
+                    console.log(segmentedUpperUrl);
+                    load_obj(segmentedUpperUrl,function(mesh){
+
+                      uppermesh=mesh;
+                      scene.remove(mes);
+                      scene.remove(mesh);
+                      displayBoth(uppermesh,lowermesh);
+                    });
+                  
+                  });
+                  displayLabels(LabelLower);
+                
+
+
+
+                  selectedColores_Lower=[];
+                  getSelectedTooth(LabelLower,selectedColores_Lower);
+
+                  
+
+                 }
+                else{
+                if (files.length==2){
+                
+                  
+                  scene.remove(mesh);
+
+                  reseteScene();
+                
+                  
+                  
+            
+                  load_obj(files[1], function (mes) {
+                    lowermesh=mes;
+                    load_obj(files[0], function (mesh) {
+                    uppermesh=mesh ;
+                  
+                  scene.remove(mes);    
+                  scene.remove(mesh);
+                  displayBoth(uppermesh,lowermesh) ;
+                  
+                  
+
+                });
+                  });
+                    
+
+                  }
+                }
+                          
+
+
+                  
+                  
+                  
+                  
+                  
+                    
+                            
+            });
+
+// Segmentation click button
+
+          
+          
+        });
+function reseteScene(){
+  camera.position.set(0, 0, 70);
+  renderer.render(scene, camera);
+  controls.dispose();
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+}
+
+function displayBoth(upper,lower){
+                  process_title=document.getElementById("process") ;
+
+                  process_title.innerHTML="Both Jaws Segmentation" ;
+
+                  const radians = Math.PI; // 180 degrees in radians
+
+                  // Apply the rotation (assuming you meant to rotate around the Z-axis)
+                  upper.rotation.y += radians;// Set the position of the upper mesh
+                  upper.rotation.z+=0.2;
+                  upper.position.y+=2;
+                  upper.position.x+=2;
+                
+                  
+                  const boxUpper = new THREE.Box3().setFromObject(upper);
+                  const upperCenter = boxUpper.getCenter(new THREE.Vector3());
+                 // Add the upper mesh to the scene
+
+                  
+                
+                  const boxLower = new THREE.Box3().setFromObject(lower);
+                  const lowerCenter = boxLower.getCenter(new THREE.Vector3());
+
+                  // Calculate the distance between the upper and lower meshes
+                  const distance = upperCenter.z - lowerCenter.z;
+                
+                  
+                  camera.position.z+=distance-6;
+                  camera.position.y-=150;
+                  camera.position.x+=10;
+                  camera.position.z+=50;
+              
+                  
+                  renderer.render(scene, camera);
+                
+                  // Apply the rotation (assuming you meant to rotate around the Z-axis)
+              
+                  scene.add(upper);
+
+                  // Set the position of the upper mesh to be above the lower mesh
+                  lower.position.z +=distance-37;
+                  lower.rotation.z-=0.3;
+
+
+                
+
+                  // Add the lower mesh to the scene after positioning the upper mesh
+                  scene.add(lower);
+}
+
+document.getElementById('segment-btn').addEventListener('click', async () => {
+
+// should save both upper and lower segmentation : one will be displayed other  in the backend if needed 
+  if (lowermesh){
+      scene.remove(lowermesh);
+      scene.remove(uppermesh);
+  }
+  
+  
+
+  if (filePathTOSegment.includes("upper")) {
+      // Wait for segmentation of the upper jaw
+
+      const { segmentedMeshUrl: segUrl, restoreLabel: Labell } = await Segmentation_Stage(filePathTOSegment);
+      segmentedUpperUrl=segUrl;
+      LabelUpper=Labell;
+      console.log(bothoption);
+      if(bothoption){
+        if (files.length === 2) { // Segment lower jaw if it exists
+        // Start the lower jaw segmentation in the background (non-blocking)
+        await Segmentation_Stage(files[1]) .then(({ segmentedMeshUrl: lowerseg, restoreLabel: label }) => {
+                    segmentedLowerUrl = lowerseg;
+                    LabelLower = label;
+            // Optionally handle the result (e.g., store it for later use)
+            console.log("Lower Jaw URL:", segmentedLowerUrl);
+        }) ;
+      }
+      
+        console.log("##########################",segmentedLowerUrl);
+        console.log("##########################",segmentedUpperUrl);
+        scene.remove(mesh);
+        reseteScene();
+        
+        //displayLabels(LabelLower);
+        load_obj(segmentedLowerUrl, function (mes) {
+          lowermesh=mes;
+          //console.log(segmentedUpperUrl);
+          load_obj(segmentedUpperUrl,function(mesh){
+
+            uppermesh=mesh;
+            scene.remove(mes);
+            scene.remove(mesh);
+            displayBoth(uppermesh,lowermesh);
+            process_title=document.getElementById("process") ;
+
+            process_title.innerHTML="Both Jaw Visualization" ; 
+          });
+        
+        });
+        displayLabels(LabelLower);
+      
+
+
+
+        selectedColores_Lower=[];
+        getSelectedTooth(LabelLower,selectedColores_Lower);
+        bothoption=false; 
+
+        
+
+
+      }
+      else{
+      Visualization(segmentedUpperUrl,LabelUpper); // upper segmented displayed 
+      getSelectedTooth(LabelUpper,selectedColores_Upper);
+      }
+      if ((files.length === 2)&&(!bothoption)) { // Segment lower jaw if it exists
+        // Start the lower jaw segmentation in the background (non-blocking)
+        await Segmentation_Stage(files[1]) .then(({ segmentedMeshUrl: lowerseg, restoreLabel: label }) => {
+                    segmentedLowerUrl = lowerseg;
+                    LabelLower = label;
+            // Optionally handle the result (e.g., store it for later use)
+            console.log("Lower Jaw URL:", segmentedLowerUrl);
+        }).catch(error => {
+            console.error('Lower jaw segmentation failed:', error);
+        });}
+      
+
+      
+
+  } else {
+      // Wait for segmentation of the lower jaw
+  
+    
+    const { segmentedMeshUrl: lowerseg, restoreLabel: Label } = await Segmentation_Stage(filePathTOSegment);
+
+    segmentedLowerUrl=lowerseg;
+    LabelLower=Label;
+    if(bothoption){
+      if (files.length === 2) {
+        await Segmentation_Stage(files[0]) .then(({ segmentedMeshUrl: upperseg, restoreLabel: label }) => {
+                    segmentedUpperUrl = upperseg;
+                    LabelUpper = label;
+        
+      }) ;
+      }
+
+      scene.remove(mesh);
+      reseteScene();
+        
+        //displayLabels(LabelLower);
+      load_obj(segmentedLowerUrl, function (mes) {
+        lowermesh=mes;
+        console.log(segmentedUpperUrl);
+        load_obj(segmentedUpperUrl,function(mesh){
+
+          uppermesh=mesh;
+          scene.remove(mes);
+          scene.remove(mesh);
+          displayBoth(uppermesh,lowermesh);
+          process_title=document.getElementById("process") ;
+
+          process_title.innerHTML="Both Jaw Visualization" ; 
+        });
+      
+      });
+      displayLabels(LabelLower);
+    
+
+
+
+      selectedColores_Lower=[];
+      getSelectedTooth(LabelLower,selectedColores_Lower);
+      bothoption=false; 
+
+
+      
+
+
+      }
+    else{
+    Visualization(segmentedLowerUrl,LabelLower); // segmented lower displayed
+    getSelectedTooth(LabelLower,selectedColores_Lower);
+
+    if ((files.length === 2)&&(!bothoption)) {
+      await Segmentation_Stage(files[0]) .then(({ segmentedMeshUrl: upperseg, restoreLabel: label }) => {
+                    segmentedUpperUrl = upperseg;
+                    LabelUpper = label;
+        
+      }) ;
+  }
+}
+
+
+
+
+}
+});
+
+
+        
+      
+
+
+//------------------------------------------Segmentation process---------------------------------------------------//
+
+//---------------------------------Segmentation function -----------------------------------------------------//
+async function Segmentation_Stage(file_path) {
+    // Initialize segmentedMeshUrl
+    let segmentedMeshUrl = '';
+    let restoreLabel = '';
+
+    // Placeholder for segmentation functionality
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const dataToSend = { "file_path": file_path };
+    try {
+        const response = await fetch('/segment_mesh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(dataToSend) // Send the file path to the server for segmentation
+        });
+        const data = await response.json();
+
+        if (data.status === "success") {
+            
+
+            segmentedMeshUrl = data.path; // Store the URL of the segmented mesh
+            restoreLabel = data.labels; // Assuming restoreLabel is used elsewhere
+
+            // Update the process title
+            const process_title = document.getElementById("process");
+          
+              
+            if (!document.getElementById('back_vis')) { // Check if the back button doesn't already exist
+                document.getElementById('segment-btn').outerHTML = `
+                    <button type="button" id="back_vis" class="flex items-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none">
+                        &lt; Back
+                    </button>
+                `;
+                      // Add event listener for the Back button
+                document.getElementById('back_vis').addEventListener('click', function() {
+                    // Reload the page to show the original visualization
+                    location.reload();
+                });
+                
+                if (process_title) {
+                    process_title.innerHTML = `${file_path.split('/').pop().toLowerCase().slice(0, 5)} Jaw Segmentation`;
+                }
+                
+                
+              }
+
+        } else {
+            console.error('Segmentation failed:', data);
+            alert('Segmentation failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+
+    return { segmentedMeshUrl, restoreLabel };  // Return the segmented mesh URL
+}
+
+
+
+
+
+function addDownloadButton(){
+  button=document.createElement('button');
+  button.id="download_obj"
+  button.className = 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600';
+  button.textContent = 'Download Segmented Mesh';
+
+  button.addEventListener('click', () => {
+
+    // Should not be undefined
+    mesh.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+        console.log(child.material.color); // Should show the color of the mesh material
+    }
+});
+originalMesh.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+        console.log(child.material.color); // Should show the color of the mesh material
+    }
+});
+const exporter = new THREE.OBJExporter();
+const meshData = exporter.parse(mesh); // Export the group directly
+const blob = new Blob([meshData], { type: 'text/plain' });
+const link = document.createElement('a');
+link.href = URL.createObjectURL(blob);
+link.download = 'segmented_mesh.obj';
+link.click();
+
+URL.revokeObjectURL(link.href);
+    });
+
+    const downloadContainer = document.getElementById('download-container');
+    downloadContainer.innerHTML = ''; // Clear any existing content
+    downloadContainer.appendChild(button);
+
+}
+
+
+
+
+    </script>
+</body>
+</html>

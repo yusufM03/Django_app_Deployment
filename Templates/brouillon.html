@@ -1,0 +1,617 @@
+
+<!--hide option-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Container and panel styles */
+        #mesh-container {
+            height: 100%;
+            width: 100%;
+            border: 2px solid #4a5568;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #1a202c;
+            margin-bottom: 1rem;
+            margin-top: 5px;
+        }
+
+        #label-container {
+            overflow-y: auto;
+            height: 95%;
+            background-color: #2d3748;
+            margin-top: 5px;
+        }
+
+        #labels-box .label-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+        }
+
+        .label-color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .label-text {
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white h-screen overflow-hidden">
+
+    <!-- Navbar -->
+    <header>
+        <nav class="flex justify-between items-center p-4 bg-gray-900 border-b-4 border-green-500">
+            <a href="#home" class="text-white font-bold text-xl">CS</a>
+            <div class="space-x-4">
+                <a href="#home" class="text-white hover:text-green-500">HOME</a>
+                <a href="#docs" class="text-white hover:text-green-500">DOCS</a>
+                <a href="#start" class="text-white hover:text-green-500">START</a>
+                <a href="#about" class="text-white hover:text-green-500">ABOUT</a>
+                <a href="#contact" class="text-white hover:text-green-500">CONTACT</a>
+            </div>
+            <button class="bg-transparent border border-white text-white py-2 px-4 rounded hover:bg-green-500">Log Out</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex h-full p-8">
+        <h2 id="process" class="text-2xl font-bold mb-8 w-full text-center">Mesh Visualization</h2>
+        <div class="flex w-full h-full">
+
+            <!-- Left panel for labels and load buttons -->
+            <div id="label-container" class="w-1/4 p-4">
+                <h3 class="text-lg font-semibold text-white mb-4">Labels</h3>
+                <div id="labels-box" class="space-y-4">
+                    <!-- Labels will be dynamically added here -->
+                </div>
+
+                <!-- Load Buttons Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Smile Creator</h3>
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium mb-1">Select Smile Image / Retracted Image</label>
+                        <button class="flex items-center bg-purple-800 text-white w-full rounded px-2 py-2 mb-2">
+                            <span class="material-icons mr-2">face</span>
+                            Load a retracted image
+                        </button>
+                        <button class="flex items-center bg-purple-800 text-white w-full rounded px-2 py-2">
+                            <span class="material-icons mr-2">face</span>
+                            Load a smile image
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right panel for 3D visualization -->
+            <div id="mesh-container" class="w-3/4 p-4">
+                <!-- Three.js mesh visualization will be here -->
+                <div class="flex justify-center space-x-4 mb-4">
+                    <div id="lower-jaw-btn" class="bg-green-500 hover:bg-green-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Lower Jaw">
+                        <span class="text-white font-bold">L</span> <!-- Lower jaw sign -->
+                    </div>
+                    <div id="upper-jaw-btn" class="bg-blue-500 hover:bg-blue-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Upper Jaw">
+                        <span class="text-white font-bold">U</span> <!-- Upper jaw sign -->
+                    </div>
+                    <div id="both-jaws-btn" class="bg-purple-500 hover:bg-purple-600 w-8 h-8 rounded-md cursor-pointer flex items-center justify-center" title="Both Jaws">
+                        <span class="text-white font-bold">B</span> <!-- Both jaws sign -->
+                    </div>
+                </div>
+
+                <!-- Buttons Container -->
+                <div id="download-container" class="mt-4"></div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Section for Show/Hide and Segmentation -->
+        <div class="flex justify-between w-full mt-4">
+
+            <!-- Show/Hide Section -->
+            <div class="bg-white text-purple-800 p-4 rounded shadow">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold">SHOW/HIDE</span>
+                    <button class="bg-purple-800 text-white rounded px-2 py-1 ml-4">Hide all</button>
+                </div>
+                <ul class="mt-2 space-y-1 text-sm">
+                    <li><input type="checkbox" id="antagonists" checked class="mr-2"><label for="antagonists">Antagonists</label></li>
+                    <li><input type="checkbox" id="jaw-scans" checked class="mr-2"><label for="jaw-scans">Jaw scans</label></li>
+                    <li><input type="checkbox" id="pre-op-scans" checked class="mr-2"><label for="pre-op-scans">Pre-op scans</label></li>
+                    <li><input type="checkbox" id="other-parts" checked class="mr-2"><label for="other-parts">All other parts</label></li>
+                </ul>
+            </div>
+
+            <!-- Segmentation Button -->
+            <div>
+                <form id="csrf-form" method="post">
+                    {% csrf_token %}
+                </form>
+                <button type="button" id="segment-btn" class="flex items-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none">
+                    Segment Mesh
+                </button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start</title>
+     Tailwind CSS CDN 
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional styles for the drop zone */
+        #dropzone {
+            width: 90%;
+            height: 300px; /* Adjustable height for the drop zone */
+            border: 2px dashed #4a5568; /* Tailwind gray-700 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            background-color: #1a202c; /* Tailwind gray-900 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e0; /* Tailwind gray-300 */
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        #dropzone.dragover {
+            border-color: #68d391; /* Tailwind green-400 */
+            color: #68d391; /* Tailwind green-400 */
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white h-screen overflow-hidden">
+
+     Navbar 
+    <header>
+        <nav class="flex justify-between items-center p-4 bg-gray-900 border-b-4 border-green-500">
+            <a href="#home" class="text-white font-bold text-xl">CS</a>
+            <div class="space-x-4">
+                <a href="#home" class="text-white hover:text-green-500">HOME</a>
+                <a href="#docs" class="text-white hover:text-green-500">DOCS</a>
+                <a href="#start" class="text-white hover:text-green-500">START</a>
+                <a href="#about" class="text-white hover:text-green-500">ABOUT</a>
+                <a href="#contact" class="text-white hover:text-green-500">CONTACT</a>
+            </div>
+            <button class="bg-transparent border border-white text-white py-2 px-4 rounded hover:bg-green-500">Log Out</button>
+        </nav>
+    </header>
+-->
+    <!-- Main Content -->
+       <!--
+    <main class="flex flex-col items-center justify-center h-full p-8">
+        <h2 class="text-3xl font-semibold text-center mb-12">Please choose an option to Start</h2>
+        <form method="post" enctype="multipart/form-data" action="{% url 'upload_mesh' %}">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    
+                    <div class="bg-gray-900 flex flex-col md:flex-row w-full px-6 py-12 rounded-md">
+                        <div class="text-center flex flex-col md:flex-row gap-4 w-full">
+                            <button id="visualize-btn" class="bg-slate-100 font-semibold text-slate-800 py-4 px-8 hover:bg-slate-700 hover:text-white leading-tight rounded-lg transition ease-linear">
+                                <div class="flex items-center whitespace-nowrap">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-2">
+                                        <path d="M6 18h8"></path>
+                                        <path d="M3 22h18"></path>
+                                        <path d="M14 22a7 7 0 1 0 0-14h-1"></path>
+                                        <path d="M9 14h2"></path>
+                                        <path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"></path>
+                                        <path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"></path>
+                                    </svg>
+                                    Visualize OBJ File
+                                </div>
+                            </button>
+                            <button id="segment-btn" class="bg-slate-100 font-semibold text-slate-800 py-4 px-8 hover:bg-slate-700 hover:text-white leading-tight rounded-lg transition ease-linear">
+                                <div class="flex items-center whitespace-nowrap">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-2">
+                                        <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+                                        <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+                                    </svg>
+                                    Segment OBJ File
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn" class="hidden"></button>
+            </div>
+        </form>
+    </main>
+
+    <!-- JavaScript to Handle File Drag-and-Drop -->
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file');
+        const submitBtn = document.getElementById('submit-btn');
+        const visualizeBtn = document.getElementById('visualize-btn');
+        const segmentBtn = document.getElementById('segment-btn');
+
+        dropzone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                submitBtn.click(); // Submit form when file is dropped
+            }
+        });
+
+        visualizeBtn.addEventListener('click', () => {
+            fileInput.click(); // Trigger file input when "Visualize" button is clicked
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                submitBtn.click(); // Submit form when file is selected
+            }
+        });
+
+        segmentBtn.addEventListener('click', () => {
+            // Placeholder for segmentation functionality
+            alert('Segmenting the mesh...');
+            // Add your segmentation logic here
+        });
+    </script>
+</body>
+</html> 
+
+<script>
+
+//-----------------------------select teeth box label ----------------------------//
+function getSelectedTeeth(mesh) {
+  function handleClick(event) {
+      const labelElement = event.target;
+
+      if (!labelElement) {
+          console.error('Label element not found in the clicked target.');
+          return;
+      }
+
+      const label = labelElement.textContent.trim();
+      const rgb = restoreLabel[label]; // Ensure restoreLabel is defined and holds the RGB values
+
+      if (!rgb) {
+          console.error('Color not found for label:', label);
+          return;
+      }
+
+      const targetColor = new THREE.Color(rgb[0], rgb[1], rgb[2]);
+
+      
+    
+          // Array to store matching vertices
+          const matchingVertices = [];
+
+      mesh.traverse(function (child) {
+              if (child.isMesh && child.geometry && child.geometry.isBufferGeometry) {
+                  const geometry = child.geometry;
+                  const positionAttribute = geometry.attributes.position;
+                  const colorAttribute = geometry.attributes.color;
+
+                  if (!colorAttribute) {
+                      console.warn('No color attribute found on the mesh.');
+                      return;
+                  }
+
+                  // Collect vertices that match the target color
+                  for (let i = 0; i < positionAttribute.count; i++) {
+                      const vertexColor = new THREE.Color().fromBufferAttribute(colorAttribute, i);
+
+                      if (colorsAreClose(targetColor, vertexColor)) {
+                          const vertex = new THREE.Vector3().fromBufferAttribute(positionAttribute, i);
+                          matchingVertices.push(vertex);
+                      }
+                  }
+              }
+        
+        
+          if (matchingVertices.length > 0) {
+              // Create new geometry from the filtered vertices
+              const toothGeometry = new THREE.BufferGeometry();
+              const positions = new Float32Array(matchingVertices.length * 3);
+
+              for (let i = 0; i < matchingVertices.length; i++) {
+                  positions[i * 3] = matchingVertices[i].x;
+                  positions[i * 3 + 1] = matchingVertices[i].y;
+                  positions[i * 3 + 2] = matchingVertices[i].z;
+              }
+
+              toothGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+              toothGeometry.computeVertexNormals();
+
+              // Create the material
+              const toothMaterial = new THREE.MeshStandardMaterial({
+                  color: targetColor,
+                  metalness: 0.3,
+                  roughness: 0.7,
+                  flatShading: false,
+              });
+
+              // Remove the previously selected tooth mesh, if any
+              
+
+              // Create the new mesh and add it to the scene
+              const toothMesh = new THREE.Mesh(toothGeometry, toothMaterial);
+              scene.remove(mesh);
+              scene.add(toothMesh);
+
+              // Remove the original mesh (optional, depending on your application)
+              
+
+              // Save the newly created mesh as selectedToothMesh
+              selectedToothMesh = toothMesh;
+          } else {
+              console.warn('No vertices found with the matching color.');
+          }
+      })
+  
+    }
+  // Attach click event listener to label elements
+  const divs = document.querySelectorAll('.label-text');
+  divs.forEach(div => {
+      div.addEventListener('click', handleClick);
+  });
+}
+
+
+// Utility function to compare colors within a certain tolerance
+function colorsAreClose(c1, c2, tolerance = 0.2) {
+  return Math.abs(c1.r - c2.r) < tolerance &&
+         Math.abs(c1.g - c2.g) < tolerance &&
+         Math.abs(c1.b - c2.b) < tolerance;
+}
+
+
+
+
+
+
+
+//----------------  feature select teeth-----------------------------------//
+
+// Function to handle double-click event
+function onMouseDoubleClick(event) {
+    // Convert mouse coordinates to normalized device coordinates (-1 to +1)
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the raycaster with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // Check for intersections with the loaded meshes
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    console.log(intersects);
+    if (intersects.length > 0) {
+        const intersectedObject = intersects[0].object;
+
+        if (intersectedObject.isMesh) {
+            const geometry = intersectedObject.geometry;
+
+            if (geometry.isBufferGeometry) {
+                const positionAttribute = geometry.attributes.position;
+                const colorAttribute = geometry.attributes.color; // Assuming each vertex has a color attribute
+                console.log(colorAttribute);
+
+                // Get the intersected face
+                const face = intersects[0].face;
+                console.log(face);
+
+                // Extract the vertices of the clicked face
+                const clickedVertices = [
+                    new THREE.Vector3().fromBufferAttribute(positionAttribute, face.a),
+                    new THREE.Vector3().fromBufferAttribute(positionAttribute, face.b),
+                    new THREE.Vector3().fromBufferAttribute(positionAttribute, face.c)
+                ];
+
+                // Identify the color (or class) of the clicked vertices
+                const vertexIndices = [face.a, face.b, face.c];
+                const colors = vertexIndices.map(index => {
+                    if (colorAttribute) {
+                        // Assuming color is stored as RGB
+                        const color = new THREE.Color().fromBufferAttribute(colorAttribute, index);
+                        return color.getStyle(); // Convert to a CSS color string for comparison
+                    }
+                }).filter(color => color); // Remove any undefined colors
+
+                // Function to find the most frequent color
+                function getMostFrequentColor(colors) {
+                    const frequency = {};
+
+                    // Count the occurrences of each color
+                    for (let i = 0; i < colors.length; i++) {
+                        const color = colors[i];
+                        frequency[color] = (frequency[color] || 0) + 1;
+                    }
+
+                    // Find the most frequent color
+                    let mostFrequentColor = null;
+                    let maxFrequency = 0;
+
+                    for (const color in frequency) {
+                        if (frequency[color] > maxFrequency) {
+                            maxFrequency = frequency[color];
+                            mostFrequentColor = color;
+                        }
+                    }
+
+                    return mostFrequentColor;
+                }
+
+                const clickedColor = getMostFrequentColor(colors);
+                console.log("Clicked Color:", clickedColor);
+
+                // Extract all vertices belonging to the same tooth (based on color)
+                const toothVertices = [];
+                for (let i = 0; i < positionAttribute.count; i++) {
+                    const vertexColor = colorAttribute ? new THREE.Color().fromBufferAttribute(colorAttribute, i).getStyle() : null;
+
+                    if (vertexColor === clickedColor) {
+                        const vertex = new THREE.Vector3().fromBufferAttribute(positionAttribute, i);
+                        toothVertices.push(vertex);
+                    }
+                }
+
+                // Visualize the selected tooth
+                if (selectedToothMesh) {
+                    scene.remove(selectedToothMesh); // Remove any previously selected tooth mesh
+                }
+
+                // Create a new mesh for the selected tooth
+                const toothGeometry = new THREE.BufferGeometry().setFromPoints(toothVertices);
+                const toothMaterial = new THREE.PointsMaterial({ color: new THREE.Color(clickedColor), size: 0.05 });
+                selectedToothMesh = new THREE.Points(toothGeometry, toothMaterial);
+
+                scene.add(selectedToothMesh);
+            }
+        }
+    }
+}
+window.addEventListener('dblclick', onMouseDoubleClick);
+
+
+
+//################ Drag option for upload file############################
+
+
+const dropzone = document.getElementById('dropzone');
+const visualizeBtn = document.getElementById('visualize-btn');
+const fileInput = document.getElementById('file');
+const submitBtn = document.getElementById('submit-btn');
+
+visualizeBtn.addEventListener('click', () => {
+    dropzone.style.display = dropzone.style.display === 'none' || dropzone.style.display === '' ? 'flex' : 'none';
+});
+
+dropzone.addEventListener('click', () => {
+    fileInput.click();
+});
+
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+});
+
+dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+});
+
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        submitBtn.click(); // Trigger form submission or other action
+    }
+});
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+        submitBtn.click(); // Trigger form submission
+    }
+});
+function displayBoth(upper,lower){
+                  process_title=document.getElementById("process") ;
+
+                  process_title.innerHTML="Both Jaws Segmentation" ;
+
+                  const radians = Math.PI; // 180 degrees in radians
+
+                  // Apply the rotation (assuming you meant to rotate around the Z-axis)
+                  upper.rotation.y += radians;// Set the position of the upper mesh
+                  upper.rotation.z+=0.2;
+                  upper.position.y+=2;
+                  upper.position.x+=2;
+                
+                  
+                  const boxUpper = new THREE.Box3().setFromObject(upper);
+                  const upperCenter = boxUpper.getCenter(new THREE.Vector3());
+                
+
+                  
+                
+                  const boxLower = new THREE.Box3().setFromObject(lower);
+                  const lowerCenter = boxLower.getCenter(new THREE.Vector3());
+
+                  // Calculate the distance between the upper and lower meshes
+                  const distance = upperCenter.z - lowerCenter.z;
+                
+                  
+                  camera.position.z+=distance-6;
+                  camera.position.y-=150;
+                  camera.position.x+=10;
+                  camera.position.z+=50;
+              
+                  
+                  renderer.render(scene, camera);
+                
+                  // Apply the rotation (assuming you meant to rotate around the Z-axis)
+                
+                  scene.add(upper);
+
+                  // Set the position of the upper mesh to be above the lower mesh
+                  lower.position.z +=distance-37;
+                  lower.rotation.z-=0.3;
+
+
+                
+
+                  // Add the lower mesh to the scene after positioning the upper mesh
+                  scene.add(lower);
+}
+</script>
