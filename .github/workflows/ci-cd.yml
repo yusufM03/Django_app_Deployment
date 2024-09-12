@@ -29,6 +29,10 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: docker push ymack/my-django:latest
+         # Run collectstatic
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+        
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
