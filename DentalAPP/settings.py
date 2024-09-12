@@ -139,6 +139,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Keep the default storage settings for media files
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://dentalize-ahexc4e4bna0h9gy.eastus-01.azurewebsites.net',
-]
+CSRF_TRUSTED_ORIGINS = ['*']
