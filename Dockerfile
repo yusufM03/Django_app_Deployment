@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements file and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install --no-cache-dir django-cors-headers
 # Copy the rest of your application code
 COPY . /app
 WORKDIR /app
