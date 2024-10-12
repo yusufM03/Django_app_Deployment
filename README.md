@@ -6,4 +6,4 @@
 This project includes a CI/CD pipeline for automatic building, testing, and deployment using GitHub Actions. The application is deployed on Azure.
 
 ### Video Demo
-You can watch the demo [here](demo/demo.gif).
+![Demo](demo/demo.gif)
