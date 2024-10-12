@@ -1,5 +1,9 @@
-# Django_app_Deployment
-App for tooth segmentation (in progress)
-CI/CD Pipeline for Automatic Building, Testing, and Deployment using github actions , deployed on azure .
+# Django App Deployment
 
-You can watch the demo [here](demo/video.mp4).
+## App for Tooth Segmentation (In Progress)
+
+### CI/CD Pipeline
+This project includes a CI/CD pipeline for automatic building, testing, and deployment using GitHub Actions. The application is deployed on Azure.
+
+### Video Demo
+You can watch the demo [here](https://vimeo.com/1018978481).
